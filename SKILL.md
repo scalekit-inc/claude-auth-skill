@@ -1,51 +1,110 @@
 ---
 name: scalekit-auth
-description: Implement authentication with Scalekit for web applications. Handles sign-up, login, logout, session management, token validation, and refresh flows. Supports Node.js, Next.js, Python, FastAPI, and Express. Use when adding authentication, implementing login/signup flows, managing user sessions, or securing web applications.
+description: Implement authentication with Scalekit for web applications, APIs, and MCP servers. Supports full-stack auth, modular SSO (SAML/OIDC), and MCP OAuth 2.1. Handles login, SSO, session management, token validation, and enterprise identity providers. Works with Node.js, Express, Next.js, Python, FastAPI, and MCP servers. Use when implementing authentication, adding SSO, securing APIs, or protecting MCP servers.
 ---
 
 # Scalekit Authentication Implementation
 
 ## Overview
 
-This skill helps you implement Scalekit's full-stack authentication system in your web application. Scalekit provides a managed authentication solution that handles:
+This skill helps you implement Scalekit authentication across different use cases. Choose the implementation path that matches your needs:
 
-- User sign-up and login
-- Session management with secure token storage
-- Token refresh and validation
-- Logout flows
-- Support for multiple authentication methods (passwordless, social login, enterprise SSO)
+### Implementation Paths
 
-## Quick Start
+**1. Full-Stack Authentication** - Complete auth system for web apps
+- User sign-up, login, logout
+- Session management with tokens
+- Social login (Google, GitHub, etc.)
+- Best for: New applications or replacing existing auth
 
-**Choose your framework to get started:**
+**2. Modular SSO** - Add Enterprise SSO to existing applications
+- SAML/OIDC for enterprise customers
+- Keep your existing auth system
+- No user migration needed
+- Best for: B2B SaaS adding enterprise SSO
 
-1. **Node.js + Express** → See [templates/nodejs-express.md](full-stack-auth/templates/nodejs-express.md)
-2. **Next.js (App Router)** → See [templates/nextjs.md](full-stack-auth/templates/nextjs.md)
-3. **Python + FastAPI** → See [templates/python-fastapi.md](full-stack-auth/templates/python-fastapi.md)
+**3. MCP Server Authentication** - Secure Model Context Protocol servers
+- OAuth 2.1 for MCP clients (Claude Desktop, Cursor, VS Code)
+- Scalekit-managed or custom auth integration
+- Scope-based permissions
+- Best for: MCP server developers
 
-Or follow the comprehensive guide: [Full-Stack Auth Quickstart](full-stack-auth/quickstart.md)
+## Quick Start: Choose Your Path
+
+### Path 1: Full-Stack Authentication
+
+**When to use:** Building a new app or replacing authentication
+
+**Quickstart:** [full-stack-auth/quickstart.md](full-stack-auth/quickstart.md)
+
+**Templates:**
+- [Node.js + Express](full-stack-auth/templates/nodejs-express.md)
+- [Next.js App Router](full-stack-auth/templates/nextjs.md)
+- [Python + FastAPI](full-stack-auth/templates/python-fastapi.md)
+
+**What you get:**
+- Complete login/signup flows
+- Session management
+- Token refresh
+- Logout handling
+- Social & enterprise login
+
+---
+
+### Path 2: Modular SSO
+
+**When to use:** Adding Enterprise SSO to existing authentication
+
+**Quickstart:** [modular-sso/quickstart.md](modular-sso/quickstart.md)
+
+**Templates:**
+- [Node.js + Express SSO](modular-sso/templates/nodejs-express-sso.md)
+
+**What you get:**
+- SAML/OIDC support
+- Integration with Auth0/Firebase/Cognito
+- Keep existing users and sessions
+- Enterprise customer onboarding
+- Admin portal for SSO setup
+
+---
+
+### Path 3: MCP Server Authentication
+
+**When to use:** Securing Model Context Protocol servers
+
+**Quickstarts:**
+- [OAuth 2.1 with Scalekit](mcp-auth/oauth-quickstart.md) - Scalekit manages auth
+- [Custom Auth Integration](mcp-auth/custom-auth-integration.md) - Use your existing auth
+
+**What you get:**
+- OAuth 2.1 compliance
+- MCP client support
+- Token validation
+- Scope-based permissions
+- Discovery endpoint
+
+---
 
 ## Prerequisites
 
-Before implementing, ensure you have:
+Before implementing any path, ensure you have:
 
 1. **Scalekit Account**: Sign up at https://scalekit.com
-2. **Environment Variables**: From your Scalekit Dashboard → Settings
+2. **Environment Variables**: From Scalekit Dashboard → Settings
    - `SCALEKIT_ENVIRONMENT_URL`
    - `SCALEKIT_CLIENT_ID`
    - `SCALEKIT_CLIENT_SECRET`
-3. **Callback URL Registered**: Add your redirect URI in Scalekit Dashboard
+3. **Callback URLs Registered**: In Scalekit Dashboard → Settings
 
 **Validate your setup:**
 ```bash
 python scripts/validate_env.py
 ```
 
-## Implementation Workflow
+## Common Implementation Steps
 
 ### Step 1: Install SDK
-
-Choose your language:
 
 **Node.js:**
 ```bash
@@ -81,123 +140,91 @@ scalekit = ScalekitClient(
 )
 ```
 
-### Step 3: Implement Core Flows
+### Step 3: Follow Your Implementation Path
 
-The skill guides you through implementing:
+Choose your path above and follow the quickstart guide.
 
-1. **Login Flow**
-   - Generate authorization URL with required scopes
-   - Redirect user to Scalekit login page
-   - Handle callback and exchange code for tokens
+## Decision Helper
 
-2. **Session Management**
-   - Store tokens securely in HttpOnly cookies
-   - Validate access tokens on protected routes
-   - Refresh tokens when expired
+**Not sure which path to use?**
 
-3. **Logout Flow**
-   - Generate logout URL
-   - Clear session cookies
-   - Redirect to post-logout page
+**I need to add authentication to a new web app:**
+→ Use **Full-Stack Authentication**
 
-See [full-stack-auth/quickstart.md](full-stack-auth/quickstart.md) for detailed implementation.
+**I have authentication but need to add SSO for enterprise customers:**
+→ Use **Modular SSO**
 
-### Step 4: Add Middleware Protection
+**I'm building an MCP server and need OAuth:**
+→ Use **MCP Server Authentication (OAuth 2.1)**
 
-**Node.js Express:**
-```javascript
-import { authMiddleware } from './middleware/auth';
+**I have an MCP server and want to use my existing auth:**
+→ Use **MCP Server Authentication (Custom Auth)**
 
-// Protect routes
-app.use('/api/protected', authMiddleware);
-app.use('/dashboard', authMiddleware);
-```
+**I need to add login to an existing app with no auth:**
+→ Use **Full-Stack Authentication**
 
-**Python FastAPI:**
-```python
-from middleware.auth import require_auth
+**Enterprise customers require SAML but I have password-based auth:**
+→ Use **Modular SSO** (keeps your password auth)
 
-@app.get("/api/protected")
-async def protected_route(user = Depends(require_auth)):
-    return {"user": user}
-```
+## Key Concepts
 
-## Required Scopes
+### Full-Stack Auth vs Modular SSO
 
-For full-stack authentication, request these scopes:
+**Full-Stack Auth:**
+- Scalekit handles ALL authentication
+- Replaces your auth system
+- Tokens managed by Scalekit
+- Complete user database in Scalekit
 
-- `openid` - User identity (required)
-- `profile` - User profile data (name, etc.)
-- `email` - Email address
-- `offline_access` - Enables refresh tokens
+**Modular SSO:**
+- Scalekit handles only SSO protocols
+- Keeps your existing auth
+- YOUR sessions and tokens
+- YOUR user database
 
-Example:
-```javascript
-const authUrl = scalekit.getAuthorizationUrl(
-  'http://localhost:3000/auth/callback',
-  {
-    scopes: ['openid', 'profile', 'email', 'offline_access']
-  }
-);
-```
+### OAuth 2.1 for MCP Servers
 
-## Session Configuration
+- MCP clients (Claude Desktop) expect OAuth 2.1
+- Scalekit provides OAuth server
+- Discovery via `.well-known/oauth-protected-resource`
+- Bearer tokens in requests
+- Scope-based permissions
 
-**Recommended cookie settings:**
+## Security Best Practices
 
-```javascript
-{
-  httpOnly: true,        // Prevent XSS attacks
-  secure: true,          // HTTPS only (use false in development)
-  sameSite: 'strict',    // CSRF protection
-  maxAge: 3600000,       // 1 hour for access token
-  path: '/'              // Cookie scope
-}
-```
+### Token Storage
 
-Store tokens in separate cookies:
-- `accessToken` - Short-lived (5-60 minutes)
-- `refreshToken` - Long-lived (days to months)
-- `idToken` - User identity claims
+**✅ DO:**
+- Use HttpOnly cookies for tokens
+- Set `secure: true` in production (HTTPS)
+- Use `sameSite: 'strict'` for CSRF protection
+- Short token lifetimes (5-60 minutes)
 
-See [reference/session-management.md](reference/session-management.md) for best practices.
+**❌ DON'T:**
+- Store tokens in localStorage
+- Store tokens in sessionStorage
+- Expose tokens to JavaScript
 
-## Token Validation
+### Token Validation
 
-**On every protected request:**
+**Always validate tokens server-side:**
 
 ```javascript
-try {
-  const claims = await scalekit.validateAccessToken(accessToken);
-  // User is authenticated, proceed with request
-  req.user = claims;
-} catch (error) {
-  // Token invalid or expired
-  // Attempt to refresh or redirect to login
-}
+// ✅ Server-side validation
+const claims = await scalekit.validateAccessToken(token);
+req.user = claims; // Trust these claims
+
+// ❌ Never trust client-provided data
+const userId = req.cookies.userId; // Can be forged!
 ```
 
-**When access token expires:**
+### Session Management
 
-```javascript
-try {
-  const result = await scalekit.refreshAccessToken(refreshToken);
-  // Update cookies with new tokens
-  setTokenCookies(result.accessToken, result.refreshToken);
-} catch (error) {
-  // Refresh failed, redirect to login
-}
-```
-
-## Reference Documentation
-
-- **[Session Management](reference/session-management.md)** - Token storage, refresh patterns, cookie security
-- **[Security Best Practices](reference/security-best-practices.md)** - CORS, CSP, XSS prevention
-- **[Environment Setup](reference/environment-setup.md)** - Configuration guide for all supported languages
+See [reference/session-management.md](reference/session-management.md) for comprehensive patterns.
 
 ## Validation Scripts
 
-Before deploying to production, run:
+Test your configuration before deploying:
 
 ```bash
 # Validate environment variables
@@ -206,51 +233,175 @@ python scripts/validate_env.py
 # Test Scalekit connectivity
 python scripts/test_connection.py
 
-# Validate token flow (interactive)
+# Interactive auth flow test
 python scripts/test_auth_flow.py
 ```
 
+## Reference Documentation
+
+### Full-Stack Auth
+
+- [Quickstart Guide](full-stack-auth/quickstart.md)
+- [Session Management](reference/session-management.md)
+- [Security Best Practices](reference/security-best-practices.md)
+
+### Modular SSO
+
+- [Quickstart Guide](modular-sso/quickstart.md)
+- [Express Integration](modular-sso/templates/nodejs-express-sso.md)
+
+### MCP Authentication
+
+- [OAuth 2.1 Quickstart](mcp-auth/oauth-quickstart.md)
+- [Custom Auth Integration](mcp-auth/custom-auth-integration.md)
+
+## Framework Support
+
+| Framework | Full-Stack Auth | Modular SSO | MCP Auth |
+|-----------|----------------|-------------|----------|
+| Node.js + Express | ✅ | ✅ | ✅ |
+| Next.js (App Router) | ✅ | Coming | ✅ |
+| Python + FastAPI | ✅ | Coming | ✅ |
+| Django | Coming | Coming | Coming |
+| Ruby on Rails | Coming | Coming | - |
+| Go | Coming | Coming | ✅ |
+
 ## Common Issues & Troubleshooting
 
-**Redirect URI mismatch:**
-- Ensure the callback URL in your code exactly matches the one registered in Scalekit Dashboard
-- Include protocol (http:// or https://) and port if not standard (80/443)
+### Redirect URI Mismatch
 
-**Token validation fails:**
-- Check that tokens are being passed correctly (Bearer header or cookie)
-- Verify environment variables are loaded
-- Ensure access token hasn't expired (check `exp` claim)
+**Error:** "redirect_uri_mismatch"
 
-**CORS errors:**
-- Configure CORS to allow your frontend domain
-- Include credentials in fetch requests: `credentials: 'include'`
+**Solution:**
+- Callback URL must match exactly
+- Include protocol (http:// or https://)
+- Include port if not 80/443
+- Check Scalekit Dashboard → Settings → Redirect URIs
 
-**Session not persisting:**
-- Verify cookies are HttpOnly and Secure (in production)
-- Check sameSite settings match your domain setup
-- Ensure cookie path is correct
+### Token Validation Fails
 
-For more help, see [reference/troubleshooting.md](reference/troubleshooting.md)
+**Error:** "Invalid or expired token"
 
-## Framework-Specific Examples
+**Solutions:**
+- Verify token in Bearer header: `Authorization: Bearer <token>`
+- Check issuer matches environment URL
+- Ensure audience includes correct resource
+- Token may have expired
 
-**Quick copy-paste implementations:**
+### Session Not Persisting
 
-- [Node.js + Express](full-stack-auth/templates/nodejs-express.md) - Complete Express app with auth
-- [Next.js App Router](full-stack-auth/templates/nextjs.md) - App Router with server actions
-- [Python + FastAPI](full-stack-auth/templates/python-fastapi.md) - FastAPI with dependency injection
+**Symptoms:** Users logged out immediately
 
-## Next Steps
+**Solutions:**
+- Set `secure: false` for localhost (HTTP)
+- Check `sameSite` attribute
+- Verify browser accepts cookies
+- Check cookie domain and path
 
-After implementing authentication:
+### CORS Errors
 
-1. **Add Authorization** - Implement role-based access control
-2. **Enable Social Login** - Configure Google, GitHub, Microsoft in Scalekit Dashboard
-3. **Add Enterprise SSO** - Enable SAML/OIDC for B2B customers
-4. **Customize UI** - White-label the login experience
+**Symptoms:** Requests blocked by CORS
 
-See Scalekit documentation at https://docs.scalekit.com for advanced features.
+**Solutions:**
+- Configure CORS middleware
+- Set `credentials: 'include'` in fetch
+- Specify exact origin (not wildcard)
+- For cross-site: `sameSite: 'none'` + `secure: true`
 
----
+## Getting Help
 
-**Note:** This prototype focuses on full-stack authentication. Additional implementation paths (Modular SSO, MCP Server Auth) will be added in future versions.
+**For implementation questions:**
+- Review quickstart guides for your path
+- Check framework-specific templates
+- See reference documentation
+
+**For Scalekit questions:**
+- Documentation: https://docs.scalekit.com
+- Support: support@scalekit.com
+
+## Advanced Features
+
+### Role-Based Access Control (RBAC)
+
+Use token claims for authorization:
+
+```javascript
+async function requireRole(req, res, next, role) {
+  const claims = await scalekit.validateAccessToken(req.cookies.accessToken);
+
+  if (!claims.roles?.includes(role)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  next();
+}
+```
+
+### Organization-Based Access
+
+Multi-tenant applications:
+
+```javascript
+const claims = await scalekit.validateAccessToken(token);
+const orgId = claims.org_id;
+
+// Only allow access to organization's data
+const data = await db.getData({ organization_id: orgId });
+```
+
+### Custom Claims
+
+Add custom data to tokens:
+
+```javascript
+// When submitting user to Scalekit
+await scalekit.auth.updateLoginUserDetails(connectionId, loginRequestId, {
+  sub: user.id,
+  email: user.email,
+  custom_field: 'custom_value', // Custom claim
+  roles: user.roles,
+  organization_id: user.orgId
+});
+
+// Later, in token validation
+const claims = await scalekit.validateToken(token);
+console.log(claims.custom_field); // 'custom_value'
+```
+
+## Next Steps by Path
+
+### After Full-Stack Auth:
+
+1. Enable social login (Google, GitHub, Microsoft)
+2. Add role-based access control
+3. Customize login UI
+4. Set up email notifications
+5. Consider adding enterprise SSO
+
+### After Modular SSO:
+
+1. Enable domain verification
+2. Set up SCIM for user provisioning
+3. Add role mapping from IdP
+4. Implement JIT provisioning
+5. Create admin portal for customers
+
+### After MCP Authentication:
+
+1. Add more scopes for granular permissions
+2. Implement rate limiting
+3. Add audit logging
+4. Test with multiple MCP clients
+5. Document API for developers
+
+## Version Information
+
+- **Current Version:** v1.0.0
+- **Includes:**
+  - Full-Stack Authentication
+  - Modular SSO
+  - MCP Server Authentication (OAuth 2.1 & Custom)
+- **Supported Languages:** Node.js, Python
+- **Supported Frameworks:** Express, Next.js, FastAPI
+
+For the latest updates, see the [GitHub repository](https://github.com/scalekit-inc/claude-auth-skill).
