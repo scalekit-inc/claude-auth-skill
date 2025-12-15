@@ -71,7 +71,7 @@ Add Enterprise SSO to your existing authentication system.
 
 **Frameworks:**
 - ✅ Node.js + Express
-- 🚧 Next.js (Coming)
+- ✅ Next.js (App Router)
 - 🚧 Python + FastAPI (Coming)
 
 **Get started:** [modular-sso/quickstart.md](modular-sso/quickstart.md)
@@ -178,7 +178,8 @@ scalekit-auth-skill/
 ├── modular-sso/                          # Modular SSO
 │   ├── quickstart.md                     # SSO integration guide
 │   └── templates/
-│       └── nodejs-express-sso.md         # Express SSO integration
+│       ├── nodejs-express-sso.md         # Express SSO integration
+│       └── nextjs-sso.md                 # Next.js App Router SSO
 │
 ├── mcp-auth/                             # MCP Server Authentication
 │   ├── oauth-quickstart.md               # OAuth 2.1 with Scalekit
@@ -342,7 +343,7 @@ Claude: I'll help you implement OAuth 2.1 for your MCP server using Scalekit.
 | Framework | Full-Stack | Modular SSO | MCP OAuth | MCP Custom |
 |-----------|-----------|-------------|-----------|------------|
 | Node.js + Express | ✅ | ✅ | ✅ | ✅ |
-| Next.js (App Router) | ✅ | 🚧 | ✅ | ✅ |
+| Next.js (App Router) | ✅ | ✅ | ✅ | ✅ |
 | Python + FastAPI | ✅ | 🚧 | ✅ | ✅ |
 | Django | 🚧 | 🚧 | 🚧 | 🚧 |
 | Ruby on Rails | 🚧 | 🚧 | - | - |
@@ -358,7 +359,7 @@ Claude: I'll help you implement OAuth 2.1 for your MCP server using Scalekit.
 
 **Added:**
 - Full-Stack Authentication (3 framework templates)
-- Modular SSO (1 framework template)
+- Modular SSO (2 framework templates)
 - MCP Server Authentication (OAuth 2.1 + Custom)
 - Comprehensive testing suite
 - Validation scripts
@@ -369,7 +370,7 @@ Claude: I'll help you implement OAuth 2.1 for your MCP server using Scalekit.
 - Next.js (App Router)
 - Python + FastAPI
 
-**Total:** 20 files, 9,000+ lines of documentation and code
+**Total:** 21 files, 9,500+ lines of documentation and code
 
 ### v0.1.0 (Prototype)
 
