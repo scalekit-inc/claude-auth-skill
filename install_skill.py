@@ -53,16 +53,16 @@ def get_skill_directory():
 def validate_skill_structure(skill_dir):
     """Validate that the skill has all required files"""
     required_files = [
-        "SKILL.md",
-        "full-stack-auth/quickstart.md",
-        "full-stack-auth/templates/nodejs-express.md",
-        "full-stack-auth/templates/nextjs.md",
-        "full-stack-auth/templates/python-fastapi.md",
-        "reference/session-management.md",
-        "reference/security-best-practices.md",
-        "scripts/validate_env.py",
-        "scripts/test_connection.py",
-        "scripts/test_auth_flow.py",
+        "skills/scalekit-auth/SKILL.md",
+        "skills/scalekit-auth/full-stack-auth/quickstart.md",
+        "skills/scalekit-auth/full-stack-auth/templates/nodejs-express.md",
+        "skills/scalekit-auth/full-stack-auth/templates/nextjs.md",
+        "skills/scalekit-auth/full-stack-auth/templates/python-fastapi.md",
+        "skills/scalekit-auth/reference/session-management.md",
+        "skills/scalekit-auth/reference/security-best-practices.md",
+        "skills/scalekit-auth/scripts/validate_env.py",
+        "skills/scalekit-auth/scripts/test_connection.py",
+        "skills/scalekit-auth/scripts/test_auth_flow.py",
     ]
 
     print("Validating skill structure...")

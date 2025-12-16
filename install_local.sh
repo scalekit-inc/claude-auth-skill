@@ -122,29 +122,19 @@ install_skill() {
     # Copy files
     print_info "Copying skill files..."
 
-    # Copy SKILL.md
-    cp SKILL.md "$target_dir/" && echo "  ✅ SKILL.md"
+    # Copy skill directory (contains SKILL.md and all templates)
+    if [ -d "skills/scalekit-auth" ]; then
+        cp -r skills/scalekit-auth/* "$target_dir/" && echo "  ✅ skills/scalekit-auth/"
+    fi
 
-    # Copy README.md
+    # Copy README.md for reference
     if [ -f "README.md" ]; then
         cp README.md "$target_dir/" && echo "  ✅ README.md"
     fi
 
-    # Copy full-stack-auth directory
-    if [ -d "full-stack-auth" ]; then
-        cp -r full-stack-auth "$target_dir/" && echo "  ✅ full-stack-auth/"
-    fi
-
-    # Copy reference directory
-    if [ -d "reference" ]; then
-        cp -r reference "$target_dir/" && echo "  ✅ reference/"
-    fi
-
-    # Copy scripts directory
-    if [ -d "scripts" ]; then
-        cp -r scripts "$target_dir/" && echo "  ✅ scripts/"
-        # Make scripts executable
-        chmod +x "$target_dir/scripts"/*.py
+    # Make scripts executable if they exist
+    if [ -d "$target_dir/scripts" ]; then
+        chmod +x "$target_dir/scripts"/*.py 2>/dev/null || true
     fi
 
     # Clean up Python cache files

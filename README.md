@@ -110,6 +110,27 @@ Secure Model Context Protocol servers with OAuth 2.1.
 
 ## Installation
 
+### For Claude Code (Plugin) - Recommended
+
+Install as a Claude Code plugin for the best experience:
+
+```bash
+git clone https://github.com/scalekit-inc/claude-auth-skill.git
+cd claude-auth-skill
+
+# Add as marketplace and install plugin
+claude plugin marketplace add .
+claude plugin install scalekit-auth@scalekit-marketplace
+```
+
+**Features:**
+- Auto-activating skill when you mention Scalekit
+- `/scalekit` command for quick help
+- `/scalekit-init` for interactive setup
+- `/scalekit-validate` to test configuration
+
+See [PLUGIN.md](PLUGIN.md) for complete plugin documentation.
+
 ### For Claude API (Workspace-Wide)
 
 ```bash
@@ -123,7 +144,7 @@ python install_skill.py
 - Anthropic API key
 - `pip install anthropic python-dotenv`
 
-### For Claude Code (Local)
+### For Claude Code (Local Skill)
 
 ```bash
 git clone https://github.com/scalekit-inc/claude-auth-skill.git
@@ -162,40 +183,49 @@ See [TESTING.md](TESTING.md) for full test suite with 20+ scenarios.
 
 ```
 scalekit-auth-skill/
-├── SKILL.md                              # Main skill entry point
+├── .claude-plugin/                       # Plugin Configuration
+│   ├── plugin.json                       # Plugin metadata
+│   └── marketplace.json                  # Marketplace configuration
+│
+├── commands/                             # Custom Commands
+│   ├── scalekit.md                       # Help command
+│   ├── scalekit-init.md                  # Interactive setup wizard
+│   └── scalekit-validate.md              # Configuration validation
+│
+├── skills/                               # Plugin Skills
+│   └── scalekit-auth/                    # Main authentication skill
+│       ├── SKILL.md                      # Skill entry point
+│       ├── full-stack-auth/              # Full-Stack Authentication
+│       │   ├── quickstart.md             # Step-by-step guide
+│       │   └── templates/
+│       │       ├── nodejs-express.md     # Complete Express app
+│       │       ├── nextjs.md             # Next.js App Router
+│       │       └── python-fastapi.md     # FastAPI implementation
+│       ├── modular-sso/                  # Modular SSO
+│       │   ├── quickstart.md             # SSO integration guide
+│       │   └── templates/
+│       │       ├── nodejs-express-sso.md # Express SSO integration
+│       │       └── nextjs-sso.md         # Next.js App Router SSO
+│       ├── mcp-auth/                     # MCP Server Authentication
+│       │   ├── oauth-quickstart.md       # OAuth 2.1 with Scalekit
+│       │   └── custom-auth-integration.md # Custom auth integration
+│       ├── reference/                    # Reference Documentation
+│       │   ├── session-management.md     # Token storage, refresh
+│       │   └── security-best-practices.md # Security guide
+│       └── scripts/                      # Validation Scripts
+│           ├── validate_env.py           # Environment validation
+│           ├── test_connection.py        # API connectivity test
+│           └── test_auth_flow.py         # Auth flow test
+│
 ├── README.md                             # This file
+├── PLUGIN.md                             # Plugin documentation
+├── CLAUDE.md                             # Architecture for Claude Code
 ├── TESTING.md                            # Comprehensive testing guide
 ├── TEST_SCENARIOS.md                     # 20+ test prompts
 ├── QUICK_START.md                        # 5-minute quick start
 │
-├── full-stack-auth/                      # Full-Stack Authentication
-│   ├── quickstart.md                     # Step-by-step guide
-│   └── templates/
-│       ├── nodejs-express.md             # Complete Express app
-│       ├── nextjs.md                     # Next.js App Router
-│       └── python-fastapi.md             # FastAPI implementation
-│
-├── modular-sso/                          # Modular SSO
-│   ├── quickstart.md                     # SSO integration guide
-│   └── templates/
-│       ├── nodejs-express-sso.md         # Express SSO integration
-│       └── nextjs-sso.md                 # Next.js App Router SSO
-│
-├── mcp-auth/                             # MCP Server Authentication
-│   ├── oauth-quickstart.md               # OAuth 2.1 with Scalekit
-│   └── custom-auth-integration.md        # Custom auth integration
-│
-├── reference/                            # Reference Documentation
-│   ├── session-management.md             # Token storage, refresh patterns
-│   └── security-best-practices.md        # Production security guide
-│
-├── scripts/                              # Validation Scripts
-│   ├── validate_env.py                   # Environment validation
-│   ├── test_connection.py                # Scalekit connectivity test
-│   └── test_auth_flow.py                 # Interactive auth flow test
-│
 ├── install_skill.py                      # API/workspace installer
-└── install_local.sh                      # Local installer
+└── install_local.sh                      # Local skill installer
 ```
 
 ---
