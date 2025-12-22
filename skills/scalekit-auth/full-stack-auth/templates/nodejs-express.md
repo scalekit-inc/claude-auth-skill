@@ -38,7 +38,7 @@ your-app/
     "dev": "node --watch app.js"
   },
   "dependencies": {
-    "@scalekit-sdk/node": "^1.0.0",
+    "@scalekit-sdk/node": "^2.1.6",
     "express": "^4.18.2",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1"
