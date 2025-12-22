@@ -98,6 +98,13 @@ Secure Model Context Protocol servers with OAuth 2.1.
 
 **Get started:** [mcp-auth/oauth-quickstart.md](mcp-auth/oauth-quickstart.md)
 
+**Framework Templates:**
+- ✅ Python + FastMCP ([template](mcp-auth/templates/python-fastmcp.md))
+- ✅ Node.js + Express
+- ✅ Next.js (App Router)
+- ✅ Python + FastAPI
+- ✅ Go
+
 **2. Custom Auth Integration**
 - Use your existing authentication system
 - Scalekit provides OAuth layer
@@ -208,7 +215,9 @@ scalekit-auth-skill/
 │       │       └── nextjs-sso.md         # Next.js App Router SSO
 │       ├── mcp-auth/                     # MCP Server Authentication
 │       │   ├── oauth-quickstart.md       # OAuth 2.1 with Scalekit
-│       │   └── custom-auth-integration.md # Custom auth integration
+│       │   ├── custom-auth-integration.md # Custom auth integration
+│       │   └── templates/
+│       │       └── python-fastmcp.md     # FastMCP implementation
 │       ├── reference/                    # Reference Documentation
 │       │   ├── session-management.md     # Token storage, refresh
 │       │   └── security-best-practices.md # Security guide
@@ -245,6 +254,9 @@ Claude: [Uses nextjs.md template]
 
 User: "Help with FastAPI authentication"
 Claude: [Uses python-fastapi.md template]
+
+User: "Building an MCP server with FastMCP"
+Claude: [Uses python-fastmcp.md template]
 ```
 
 ### Path Selection
@@ -375,6 +387,7 @@ Claude: I'll help you implement OAuth 2.1 for your MCP server using Scalekit.
 | Node.js + Express | ✅ | ✅ | ✅ | ✅ |
 | Next.js (App Router) | ✅ | ✅ | ✅ | ✅ |
 | Python + FastAPI | ✅ | 🚧 | ✅ | ✅ |
+| **Python + FastMCP** | **-** | **-** | **✅** | **-** |
 | Django | 🚧 | 🚧 | 🚧 | 🚧 |
 | Ruby on Rails | 🚧 | 🚧 | - | - |
 | Go | 🚧 | 🚧 | ✅ | ✅ |

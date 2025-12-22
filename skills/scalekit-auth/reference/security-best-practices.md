@@ -52,6 +52,7 @@ SCALEKIT_CLIENT_SECRET=prod_live_secret
 Use dedicated secret management for production:
 
 **AWS Secrets Manager:**
+
 ```javascript
 const AWS = require('aws-sdk');
 const secretsManager = new AWS.SecretsManager();
@@ -64,6 +65,7 @@ const credentials = JSON.parse(secret.SecretString);
 ```
 
 **HashiCorp Vault:**
+
 ```javascript
 const vault = require('node-vault')();
 
@@ -355,7 +357,10 @@ async function authMiddleware(req, res, next) {
   const token = req.cookies.accessToken;
 
   try {
-    const claims = await scalekit.validateAccessToken(token);
+    const claims = await scalekit.validateToken(token, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     req.user = claims;
     next();
   } catch (error) {

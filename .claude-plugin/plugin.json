@@ -1,16 +1,13 @@
 {
   "name": "scalekit-auth",
-  "description": "Comprehensive authentication implementation guide for Scalekit. Supports full-stack auth, modular SSO (SAML/OIDC), and MCP OAuth 2.1. Works with Node.js, Express, Next.js, Python, FastAPI, and MCP servers.",
-  "version": "1.0.0",
+  "description": "Comprehensive authentication implementation guide for Scalekit. Supports full-stack auth, modular SSO (SAML/OIDC), and MCP OAuth 2.1. Works with Node.js, Express, Next.js, Python, FastAPI, FastMCP, and MCP servers.",
+  "version": "1.1.0",
   "author": {
     "name": "Scalekit",
     "url": "https://scalekit.com",
     "email": "support@scalekit.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/scalekit-inc/claude-auth-skill"
-  },
+  "repository": "https://github.com/scalekit-inc/claude-auth-skill",
   "license": "MIT",
   "keywords": [
     "authentication",
@@ -22,6 +19,7 @@
     "mcp",
     "next.js",
     "express",
-    "fastapi"
+    "fastapi",
+    "fastmcp"
   ]
 }

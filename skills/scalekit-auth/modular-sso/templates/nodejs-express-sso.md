@@ -464,7 +464,7 @@ router.post('/organizations/:org_id/sso-portal', requireAdmin, async (req, res) 
   try {
     const { org_id } = req.params;
 
-    const portalLink = await scalekit.organizations.generatePortalLink(org_id);
+    const portalLink = await scalekit.organization.generatePortalLink(org_id);
 
     res.json({
       portal_url: portalLink,

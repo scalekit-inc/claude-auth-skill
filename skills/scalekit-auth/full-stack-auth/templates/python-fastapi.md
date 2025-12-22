@@ -41,7 +41,7 @@ my-fastapi-app/
 ```txt
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
-scalekit-sdk-python>=1.0.0
+scalekit-sdk-python>=2.4.13
 python-dotenv==1.0.0
 python-multipart==0.0.6
 jinja2==3.1.3

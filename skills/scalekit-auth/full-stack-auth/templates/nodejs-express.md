@@ -38,7 +38,7 @@ your-app/
     "dev": "node --watch app.js"
   },
   "dependencies": {
-    "@scalekit-sdk/node": "^1.0.0",
+    "@scalekit-sdk/node": "^2.1.6",
     "express": "^4.18.2",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1"
@@ -116,7 +116,10 @@ export async function authMiddleware(req, res, next) {
 
     // Validate access token
     try {
-      const claims = await scalekit.validateAccessToken(accessToken);
+      const claims = await scalekit.validateToken(accessToken, {
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
+        audience: process.env.SCALEKIT_CLIENT_ID
+      });
       req.user = claims;
       next();
     } catch (validationError) {
@@ -148,7 +151,10 @@ export async function authMiddleware(req, res, next) {
         }
 
         // Validate new token
-        const claims = await scalekit.validateAccessToken(result.accessToken);
+        const claims = await scalekit.validateToken(result.accessToken, {
+          issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
+          audience: process.env.SCALEKIT_CLIENT_ID
+        });
         req.user = claims;
         next();
       } catch (refreshError) {
@@ -519,7 +525,7 @@ npm run dev
 
 ### 4. Test the flow
 
-1. Visit http://localhost:3000
+1. Visit <http://localhost:3000>
 2. Click "Sign In"
 3. Complete authentication
 4. You'll be redirected to the dashboard
@@ -606,6 +612,7 @@ NODE_ENV=production
 ### Register Production URLs
 
 In Scalekit Dashboard → Settings → Redirect URIs:
+
 - Add `https://yourapp.com/auth/callback`
 
 ### Deploy Checklist
