@@ -116,7 +116,10 @@ export async function authMiddleware(req, res, next) {
 
     // Validate access token
     try {
-      const claims = await scalekit.validateAccessToken(accessToken);
+      const claims = await scalekit.validateToken(accessToken, {
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+        audience: process.env.SCALEKIT_CLIENT_ID
+      });
       req.user = claims;
       next();
     } catch (validationError) {
@@ -148,7 +151,10 @@ export async function authMiddleware(req, res, next) {
         }
 
         // Validate new token
-        const claims = await scalekit.validateAccessToken(result.accessToken);
+        const claims = await scalekit.validateToken(result.accessToken, {
+          issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+          audience: process.env.SCALEKIT_CLIENT_ID
+        });
         req.user = claims;
         next();
       } catch (refreshError) {

@@ -568,7 +568,7 @@ export async function POST(
 
     const { orgId } = params;
 
-    const portalLink = await scalekit.organizations.generatePortalLink(orgId);
+    const portalLink = await scalekit.organization.generatePortalLink(orgId);
 
     return NextResponse.json({
       portalUrl: portalLink,

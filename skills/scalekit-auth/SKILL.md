@@ -211,7 +211,10 @@ Choose your path above and follow the quickstart guide.
 
 ```javascript
 // ✅ Server-side validation
-const claims = await scalekit.validateAccessToken(token);
+const claims = await scalekit.validateToken(token, {
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  audience: process.env.SCALEKIT_CLIENT_ID
+});
 req.user = claims; // Trust these claims
 
 // ❌ Never trust client-provided data
@@ -254,6 +257,7 @@ python scripts/test_auth_flow.py
 
 - [OAuth 2.1 Quickstart](mcp-auth/oauth-quickstart.md)
 - [Custom Auth Integration](mcp-auth/custom-auth-integration.md)
+- [Python FastMCP Template](mcp-auth/templates/python-fastmcp.md)
 
 ## Framework Support
 
@@ -262,6 +266,7 @@ python scripts/test_auth_flow.py
 | Node.js + Express | ✅ | ✅ | ✅ |
 | Next.js (App Router) | ✅ | Coming | ✅ |
 | Python + FastAPI | ✅ | Coming | ✅ |
+| Python + FastMCP | - | - | ✅ |
 | Django | Coming | Coming | Coming |
 | Ruby on Rails | Coming | Coming | - |
 | Go | Coming | Coming | ✅ |
@@ -327,7 +332,10 @@ Use token claims for authorization:
 
 ```javascript
 async function requireRole(req, res, next, role) {
-  const claims = await scalekit.validateAccessToken(req.cookies.accessToken);
+  const claims = await scalekit.validateToken(req.cookies.accessToken, {
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    audience: process.env.SCALEKIT_CLIENT_ID
+  });
 
   if (!claims.roles?.includes(role)) {
     return res.status(403).json({ error: 'Forbidden' });
@@ -342,7 +350,10 @@ async function requireRole(req, res, next, role) {
 Multi-tenant applications:
 
 ```javascript
-const claims = await scalekit.validateAccessToken(token);
+const claims = await scalekit.validateToken(token, {
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  audience: process.env.SCALEKIT_CLIENT_ID
+});
 const orgId = claims.org_id;
 
 // Only allow access to organization's data
@@ -364,7 +375,10 @@ await scalekit.auth.updateLoginUserDetails(connectionId, loginRequestId, {
 });
 
 // Later, in token validation
-const claims = await scalekit.validateToken(token);
+const claims = await scalekit.validateToken(token, {
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  audience: process.env.SCALEKIT_CLIENT_ID
+});
 console.log(claims.custom_field); // 'custom_value'
 ```
 

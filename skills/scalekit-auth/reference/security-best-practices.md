@@ -355,7 +355,10 @@ async function authMiddleware(req, res, next) {
   const token = req.cookies.accessToken;
 
   try {
-    const claims = await scalekit.validateAccessToken(token);
+    const claims = await scalekit.validateToken(token, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     req.user = claims;
     next();
   } catch (error) {

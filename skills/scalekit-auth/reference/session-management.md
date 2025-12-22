@@ -159,7 +159,10 @@ async function validateRequest(req) {
 
   try {
     // Validate token
-    const claims = await scalekit.validateAccessToken(accessToken);
+    const claims = await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     return claims;
   } catch (error) {
     // Token invalid or expired
@@ -179,7 +182,10 @@ async function validateWithRefresh(req, res) {
   }
 
   try {
-    const claims = await scalekit.validateAccessToken(accessToken);
+    const claims = await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     return claims;
   } catch (validationError) {
     // Try to refresh
@@ -210,7 +216,10 @@ async function validateWithRefresh(req, res) {
       }
 
       // Validate new token
-      const claims = await scalekit.validateAccessToken(result.accessToken);
+      const claims = await scalekit.validateToken(result.accessToken, {
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+        audience: process.env.SCALEKIT_CLIENT_ID
+      });
       return claims;
     } catch (refreshError) {
       // Refresh failed, require re-authentication
@@ -231,7 +240,10 @@ Refresh tokens only when access token expires:
 async function authMiddleware(req, res, next) {
   try {
     // Validate access token
-    req.user = await scalekit.validateAccessToken(req.cookies.accessToken);
+    req.user = await scalekit.validateToken(req.cookies.accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     next();
   } catch (error) {
     // Token expired, attempt refresh
@@ -251,7 +263,10 @@ Refresh tokens before they expire (e.g., when 80% of lifetime has passed):
 
 ```javascript
 async function authMiddleware(req, res, next) {
-  const claims = await scalekit.validateAccessToken(req.cookies.accessToken);
+  const claims = await scalekit.validateToken(req.cookies.accessToken, {
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    audience: process.env.SCALEKIT_CLIENT_ID
+  });
 
   // Check if token expires soon (within 20% of lifetime)
   const now = Math.floor(Date.now() / 1000);
@@ -326,7 +341,10 @@ Session extends with each request:
 
 ```javascript
 async function authMiddleware(req, res, next) {
-  const claims = await validateAccessToken(req.cookies.accessToken);
+  const claims = await scalekit.validateToken(req.cookies.accessToken, {
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    audience: process.env.SCALEKIT_CLIENT_ID
+  });
 
   // Extend session
   res.cookie('accessToken', req.cookies.accessToken, {
@@ -438,7 +456,10 @@ logger.info({ userId: user.sub, email: user.email });
 const userId = req.cookies.userId;  // Can be tampered
 
 // ✅ Always validate token server-side
-const claims = await scalekit.validateAccessToken(req.cookies.accessToken);
+const claims = await scalekit.validateToken(req.cookies.accessToken, {
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  audience: process.env.SCALEKIT_CLIENT_ID
+});
 const userId = claims.sub;  // Cryptographically verified
 ```
 
@@ -471,7 +492,10 @@ app.post('/auth/refresh', refreshLimiter, refreshHandler);
 
 ```javascript
 async function authMiddleware(req, res, next) {
-  const claims = await validateAccessToken(req.cookies.accessToken);
+  const claims = await scalekit.validateToken(req.cookies.accessToken, {
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    audience: process.env.SCALEKIT_CLIENT_ID
+  });
 
   // Log authentication events
   await logger.logAuthEvent({

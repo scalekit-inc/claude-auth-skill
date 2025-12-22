@@ -136,7 +136,7 @@ export async function getCurrentUser(): Promise<User | null> {
  * Validate access token and return claims
  * Throws error if token is invalid or expired
  */
-export async function validateAccessToken() {
+export async function getValidatedClaims() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
 
@@ -145,7 +145,10 @@ export async function validateAccessToken() {
   }
 
   try {
-    const claims = await scalekit.validateAccessToken(accessToken);
+    const claims = await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     return claims;
   } catch (error) {
     throw new Error('Invalid or expired access token');
@@ -165,7 +168,10 @@ export async function requireAuth() {
   }
 
   try {
-    const claims = await scalekit.validateAccessToken(accessToken);
+    const claims = await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     return claims;
   } catch (error) {
     // Token invalid or expired, try to refresh
@@ -191,7 +197,10 @@ export async function requireAuth() {
         });
       }
 
-      const claims = await scalekit.validateAccessToken(result.accessToken);
+      const claims = await scalekit.validateToken(result.accessToken, {
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+        audience: process.env.SCALEKIT_CLIENT_ID
+      });
       return claims;
     } catch {
       redirect('/auth/login');
@@ -211,7 +220,10 @@ export async function isAuthenticated(): Promise<boolean> {
   }
 
   try {
-    await scalekit.validateAccessToken(accessToken);
+    await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
     return true;
   } catch {
     return false;

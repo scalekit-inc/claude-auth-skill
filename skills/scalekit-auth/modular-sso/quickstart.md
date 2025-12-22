@@ -428,7 +428,7 @@ app.get('/admin/sso/setup-link', async (req, res) => {
   const { organization_id } = req.query;
 
   try {
-    const portalLink = await scalekit.organizations.generatePortalLink(
+    const portalLink = await scalekit.organization.generatePortalLink(
       organization_id
     );
 
@@ -444,7 +444,7 @@ app.get('/admin/sso/setup-link', async (req, res) => {
 @app.get("/admin/sso/setup-link")
 async def generate_setup_link(organization_id: str):
     try:
-        portal_link = scalekit.organizations.generate_portal_link(
+        portal_link = scalekit.organization.generate_portal_link(
             organization_id
         )
         return {"portal_url": portal_link}
