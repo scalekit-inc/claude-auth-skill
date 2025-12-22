@@ -1,4 +1,5 @@
 # Scalekit Authentication Skill - Fix Plan
+
 ## Response to UnitPay Technical Issues Report
 
 **Date:** December 19, 2025
@@ -29,6 +30,7 @@ The UnitPay team has identified **5 critical issues** in the Scalekit Authentica
 ### Problem Analysis
 
 **Current Broken Pattern:**
+
 ```javascript
 // ❌ WRONG - Returns true/false, NOT claims
 const claims = await scalekit.validateAccessToken(token);
@@ -36,10 +38,11 @@ req.user = claims; // This will be `true`, not {sub, email, org_id, ...}
 ```
 
 **Correct Pattern (from MCP templates):**
+
 ```javascript
 // ✅ CORRECT - Returns actual JWT claims
 const claims = await scalekit.validateToken(token, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 // Now claims = {sub, email, org_id, roles, permissions, ...}
@@ -50,19 +53,23 @@ const claims = await scalekit.validateToken(token, {
 Found by grep search on 2025-12-19:
 
 **SKILL.md** (3 instances):
+
 - Line 214: Token validation example
 - Line 332: Protected route middleware
 - Line 347: Python example
 
 **full-stack-auth/quickstart.md** (2 instances):
+
 - Line 310: Node.js Express example
 - Line 344: Token refresh example
 
 **full-stack-auth/templates/nodejs-express.md** (2 instances):
+
 - Line 119: Login callback handler
 - Line 151: Token refresh logic
 
 **full-stack-auth/templates/nextjs.md** (5 instances):
+
 - Line 139: Function name definition
 - Line 148: Middleware implementation
 - Line 168: Protected route handler
@@ -70,6 +77,7 @@ Found by grep search on 2025-12-19:
 - Line 214: Token validation check
 
 **reference/session-management.md** (7 instances):
+
 - Line 162: Basic token validation
 - Line 182: Middleware pattern
 - Line 213: Token refresh
@@ -80,6 +88,7 @@ Found by grep search on 2025-12-19:
 - Line 474: Advanced middleware
 
 **reference/security-best-practices.md** (1 instance):
+
 - Line 358: Security example
 
 ### Fix Strategy
@@ -95,7 +104,7 @@ Create a reusable pattern that works across all templates:
  */
 async function validateAndGetClaims(accessToken) {
   const claims = await scalekit.validateToken(accessToken, {
-    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
     audience: process.env.SCALEKIT_CLIENT_ID
   });
   return claims; // {sub, email, org_id, roles, permissions, ...}
@@ -105,12 +114,14 @@ async function validateAndGetClaims(accessToken) {
 #### Step 2: File-by-File Replacement Plan
 
 **For each file:**
+
 1. Replace `validateAccessToken` → `validateToken`
 2. Add options parameter: `{issuer: ..., audience: ...}`
 3. Update surrounding code to handle claims object
 4. Add environment variable configuration if missing
 
 **Priority Order:**
+
 1. **P0:** SKILL.md (entry point - highest visibility)
 2. **P0:** full-stack-auth/quickstart.md (most used guide)
 3. **P0:** full-stack-auth/templates/*.md (copy-paste templates)
@@ -133,12 +144,14 @@ SCALEKIT_CLIENT_SECRET=your_client_secret
 **For each fixed template:**
 
 1. **Syntax Verification:**
+
    ```bash
    # Check all code blocks are valid JavaScript/TypeScript
    npx prettier --check skills/scalekit-auth/**/*.md
    ```
 
 2. **Pattern Verification:**
+
    ```bash
    # Ensure no validateAccessToken remains
    grep -r "validateAccessToken" skills/scalekit-auth/
@@ -162,12 +175,14 @@ SCALEKIT_CLIENT_SECRET=your_client_secret
 ### Problem Analysis
 
 **Current Broken Pattern:**
+
 ```javascript
 // ❌ WRONG - "organizations" property doesn't exist in SDK
 const portalLink = await scalekit.organizations.generatePortalLink(orgId);
 ```
 
 **Correct Pattern:**
+
 ```javascript
 // ✅ CORRECT - SDK uses singular "organization"
 const portalLink = await scalekit.organization.generatePortalLink(orgId);
@@ -188,13 +203,16 @@ export default class ScalekitClient {
 ### Affected Files (4 Instances)
 
 **modular-sso/quickstart.md** (2 instances):
+
 - Line 431: JavaScript example `scalekit.organizations.generatePortalLink(`
 - Line 447: Python example `scalekit.organizations.generate_portal_link(`
 
 **modular-sso/templates/nodejs-express-sso.md** (1 instance):
+
 - Line 467: `scalekit.organizations.generatePortalLink(org_id)`
 
 **modular-sso/templates/nextjs-sso.md** (1 instance):
+
 - Line 571: `scalekit.organizations.generatePortalLink(orgId)`
 
 ### Fix Strategy
@@ -214,6 +232,7 @@ scalekit.organizations. → scalekit.organization.
 ### Testing Plan
 
 1. **Verification:**
+
    ```bash
    # Ensure no "organizations" remains
    grep -r "scalekit\.organizations\." skills/scalekit-auth/
@@ -221,6 +240,7 @@ scalekit.organizations. → scalekit.organization.
    ```
 
 2. **SDK Verification:**
+
    ```javascript
    // Test in Node.js REPL
    const {ScalekitClient} = require('@scalekit-sdk/node');
@@ -274,15 +294,17 @@ scalekit.organizations. → scalekit.organization.
 ### Example: SKILL.md Line 214 Fix
 
 **Before:**
+
 ```javascript
 const claims = await scalekit.validateAccessToken(token);
 req.user = claims;
 ```
 
 **After:**
+
 ```javascript
 const claims = await scalekit.validateToken(token, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 req.user = claims; // {sub: 'usr_123', email: 'user@example.com', org_id: '...'}
@@ -291,6 +313,7 @@ req.user = claims; // {sub: 'usr_123', email: 'user@example.com', org_id: '...'}
 ### Example: modular-sso/quickstart.md Line 431 Fix
 
 **Before:**
+
 ```javascript
 const portalLink = await scalekit.organizations.generatePortalLink(
   organizationId,
@@ -299,6 +322,7 @@ const portalLink = await scalekit.organizations.generatePortalLink(
 ```
 
 **After:**
+
 ```javascript
 const portalLink = await scalekit.organization.generatePortalLink(
   organizationId,
@@ -367,6 +391,7 @@ const claims = await scalekit.validateAccessToken(token);
 ```
 
 **CORRECT:**
+
 ```javascript
 const claims = await scalekit.validateToken(token, {
   issuer: process.env.SCALEKIT_ENVIRONMENT_URL,
@@ -378,16 +403,19 @@ const claims = await scalekit.validateToken(token, {
 ### SDK Property Names
 
 **WRONG:**
+
 ```javascript
 scalekit.organizations.generatePortalLink(orgId)
 // Property "organizations" doesn't exist!
 ```
 
 **CORRECT:**
+
 ```javascript
 scalekit.organization.generatePortalLink(orgId)
 // Property is singular "organization"
 ```
+
 ```
 
 ### 4. Update TESTING.md
@@ -410,11 +438,13 @@ expect(claims.email).toBeDefined();
 ### Test: SDK Property Names
 
 **Expected Behavior:**
+
 ```javascript
 const client = new ScalekitClient(env, clientId, clientSecret);
 expect(client.organization).toBeDefined();
 expect(client.organizations).toBeUndefined();
 ```
+
 ```
 
 ---
@@ -563,6 +593,7 @@ echo "✅ All verification checks passed!"
 ## Acknowledgments
 
 **Special thanks to the UnitPay Engineering Team for:**
+
 - Comprehensive technical analysis
 - Clear reproduction steps
 - SDK source code references
@@ -587,6 +618,7 @@ This report exemplifies the kind of detailed feedback that makes open-source pro
 ## Contact
 
 For questions about this fix plan:
+
 - Create GitHub issue in scalekit-auth-skill repository
 - Reference: SCALEKIT_TECHNICAL_ISSUES_REPORT.md
 - Tag: `bug`, `critical`, `authentication`

@@ -7,18 +7,21 @@ Proper session management is critical for security and user experience. This gui
 ## Token Types
 
 ### Access Token
+
 - **Purpose**: Authorizes API requests
 - **Lifetime**: Short-lived (5-60 minutes, configurable in dashboard)
 - **Storage**: HttpOnly cookie or Authorization header
 - **Usage**: Validate on every protected request
 
 ### Refresh Token
+
 - **Purpose**: Obtain new access tokens without re-authentication
 - **Lifetime**: Long-lived (days to months, configurable)
 - **Storage**: HttpOnly cookie with restricted path
 - **Usage**: Exchange for new access token when expired
 
 ### ID Token
+
 - **Purpose**: Contains user identity claims
 - **Lifetime**: Matches access token lifetime
 - **Storage**: HttpOnly cookie
@@ -29,6 +32,7 @@ Proper session management is critical for security and user experience. This gui
 ### Recommended Settings
 
 **Production (HTTPS):**
+
 ```javascript
 {
   httpOnly: true,        // Prevents JavaScript access (XSS protection)
@@ -40,6 +44,7 @@ Proper session management is critical for security and user experience. This gui
 ```
 
 **Development (HTTP):**
+
 ```javascript
 {
   httpOnly: true,
@@ -53,25 +58,30 @@ Proper session management is critical for security and user experience. This gui
 ### Cookie Attributes Explained
 
 **httpOnly: true**
+
 - Prevents client-side JavaScript from accessing the cookie
 - Protects against XSS attacks
 - MUST be true for access and refresh tokens
 
 **secure: true**
+
 - Cookie only sent over HTTPS
 - MUST be true in production
 - Can be false for localhost development
 
 **sameSite: 'strict'**
+
 - Cookie not sent on cross-site requests
 - Protects against CSRF attacks
 - Alternative: 'lax' for better compatibility (less strict)
 
 **path: '/'**
+
 - Cookie available for all routes
 - Can restrict to specific paths (e.g., '/api' for API-only cookies)
 
 **maxAge**
+
 - Time until cookie expires (in seconds)
 - Should match token expiration time
 
@@ -110,6 +120,7 @@ res.cookie('user', JSON.stringify(user), {
 ```
 
 **Benefits:**
+
 - Reduced attack surface (path restrictions)
 - Granular control over token exposure
 - Easy to invalidate individual tokens
@@ -136,11 +147,13 @@ res.cookie('sessionId', session.id, {
 ```
 
 **Benefits:**
+
 - Tokens never leave server
 - Easier to revoke sessions
 - Centralized session management
 
 **Tradeoffs:**
+
 - Requires session storage infrastructure
 - Additional database/Redis calls
 - More complex to scale
@@ -160,7 +173,7 @@ async function validateRequest(req) {
   try {
     // Validate token
     const claims = await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return claims;
@@ -183,7 +196,7 @@ async function validateWithRefresh(req, res) {
 
   try {
     const claims = await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return claims;
@@ -217,7 +230,7 @@ async function validateWithRefresh(req, res) {
 
       // Validate new token
       const claims = await scalekit.validateToken(result.accessToken, {
-        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
         audience: process.env.SCALEKIT_CLIENT_ID
       });
       return claims;
@@ -241,7 +254,7 @@ async function authMiddleware(req, res, next) {
   try {
     // Validate access token
     req.user = await scalekit.validateToken(req.cookies.accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     next();
@@ -253,6 +266,7 @@ async function authMiddleware(req, res, next) {
 ```
 
 **Benefits:**
+
 - Minimal refresh token usage
 - Better performance (fewer refresh calls)
 - Reduced load on Scalekit servers
@@ -264,7 +278,7 @@ Refresh tokens before they expire (e.g., when 80% of lifetime has passed):
 ```javascript
 async function authMiddleware(req, res, next) {
   const claims = await scalekit.validateToken(req.cookies.accessToken, {
-    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
     audience: process.env.SCALEKIT_CLIENT_ID
   });
 
@@ -284,11 +298,13 @@ async function authMiddleware(req, res, next) {
 ```
 
 **Benefits:**
+
 - Reduces "token expired" errors for users
 - Smoother user experience
 - Can implement in background
 
 **Tradeoffs:**
+
 - More refresh API calls
 - Slightly more complex logic
 
@@ -312,11 +328,13 @@ setInterval(async () => {
 ```
 
 **Benefits:**
+
 - Explicit refresh control
 - Can show UI feedback
 - Works well for SPAs
 
 **Tradeoffs:**
+
 - Requires client-side JavaScript
 - Less efficient (refresh even when inactive)
 - Doesn't work for API-only applications
@@ -342,7 +360,7 @@ Session extends with each request:
 ```javascript
 async function authMiddleware(req, res, next) {
   const claims = await scalekit.validateToken(req.cookies.accessToken, {
-    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
     audience: process.env.SCALEKIT_CLIENT_ID
   });
 
@@ -391,7 +409,9 @@ async function authMiddleware(req, res, next) {
 
 ### Complete Logout
 
-Clear all session data and redirect to Scalekit logout:
+Clear all session data and redirect to Scalekit logout to properly terminate sessions on both your application AND the identity provider:
+
+**Express:**
 
 ```javascript
 app.get('/auth/logout', (req, res) => {
@@ -405,10 +425,61 @@ app.get('/auth/logout', (req, res) => {
   res.clearCookie('sessionCreatedAt');
 
   // Redirect to Scalekit logout (invalidates SSO session)
-  const logoutUrl = scalekit.getLogoutUrl(idToken, POST_LOGOUT_URL);
+  const logoutUrl = scalekit.getLogoutUrl({
+    idTokenHint: idToken,
+    postLogoutRedirectUri: POST_LOGOUT_URL
+  });
   res.redirect(logoutUrl);
 });
 ```
+
+**Next.js (Route Handler):**
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { scalekit, POST_LOGOUT_URL } from '@/lib/scalekit';
+
+export async function GET(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const idToken = cookieStore.get('idToken')?.value;
+
+    // Generate Scalekit logout URL
+    const logoutUrl = scalekit.getLogoutUrl({
+      idTokenHint: idToken,
+      postLogoutRedirectUri: POST_LOGOUT_URL
+    });
+
+    // Create redirect response
+    const response = NextResponse.redirect(logoutUrl);
+
+    // Clear all auth cookies
+    // Note: Use .set() with maxAge: 0 (not .delete()) for reliable cookie clearing
+    const cookieOptions = { path: '/', maxAge: 0 };
+    response.cookies.set('accessToken', '', cookieOptions);
+    response.cookies.set('refreshToken', '', cookieOptions);
+    response.cookies.set('idToken', '', cookieOptions);
+    response.cookies.set('user', '', cookieOptions);
+
+    return response;
+  } catch (error) {
+    // Fallback: Clear cookies and redirect to home
+    const response = NextResponse.redirect(new URL('/', request.url));
+    const cookieOptions = { path: '/', maxAge: 0 };
+    response.cookies.set('accessToken', '', cookieOptions);
+    response.cookies.set('refreshToken', '', cookieOptions);
+    response.cookies.set('idToken', '', cookieOptions);
+    response.cookies.set('user', '', cookieOptions);
+    return response;
+  }
+}
+```
+
+**Important:**
+
+- `POST_LOGOUT_URL` must be registered in Scalekit Dashboard → Settings → Redirect URLs
+- Without proper logout redirect, the Scalekit session and identity provider session remain active
+- For Next.js: Use `.set(name, '', { maxAge: 0 })` instead of `.delete()` for reliable cookie clearing
 
 ### Logout from All Devices
 
@@ -457,7 +528,7 @@ const userId = req.cookies.userId;  // Can be tampered
 
 // ✅ Always validate token server-side
 const claims = await scalekit.validateToken(req.cookies.accessToken, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 const userId = claims.sub;  // Cryptographically verified
@@ -493,7 +564,7 @@ app.post('/auth/refresh', refreshLimiter, refreshHandler);
 ```javascript
 async function authMiddleware(req, res, next) {
   const claims = await scalekit.validateToken(req.cookies.accessToken, {
-    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
     audience: process.env.SCALEKIT_CLIENT_ID
   });
 
@@ -523,6 +594,7 @@ async function authMiddleware(req, res, next) {
 **Symptoms:** User logs in but session doesn't persist
 
 **Solutions:**
+
 1. Check `secure` flag matches protocol (false for HTTP, true for HTTPS)
 2. Verify `sameSite` setting allows your use case
 3. Check browser console for cookie warnings
@@ -533,6 +605,7 @@ async function authMiddleware(req, res, next) {
 **Symptoms:** Users logged out frequently
 
 **Solutions:**
+
 1. Verify refresh token is being stored correctly
 2. Check refresh token hasn't expired
 3. Ensure refresh endpoint has access to refresh token cookie
@@ -543,10 +616,89 @@ async function authMiddleware(req, res, next) {
 **Symptoms:** Cookies not sent with cross-origin requests
 
 **Solutions:**
+
 1. Set `credentials: 'include'` in fetch requests
 2. Configure CORS to allow credentials: `credentials: true`
 3. Set specific origin, not wildcard: `origin: 'https://app.example.com'`
 4. Ensure `sameSite: 'none'` for cross-site cookies (requires `secure: true`)
+
+## Framework-Specific Considerations
+
+### Next.js App Router
+
+**Server Components Limitation:**
+Next.js Server Components cannot use `cookieStore.set()` during rendering. This has important implications for session management:
+
+**❌ Cannot Do This in Server Components:**
+
+```typescript
+// This will cause "Too many redirects" error
+export async function requireAuth() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  if (!accessToken) {
+    redirect('/auth/login');
+  }
+
+  try {
+    const claims = await scalekit.validateToken(accessToken, options);
+    return claims;
+  } catch (error) {
+    // ❌ CANNOT refresh token here - cookieStore.set() not allowed!
+    const refreshToken = cookieStore.get('refreshToken')?.value;
+    const result = await scalekit.refreshAccessToken(refreshToken);
+    cookieStore.set('accessToken', result.accessToken); // ERROR!
+    return claims;
+  }
+}
+```
+
+**✅ Correct Approach:**
+
+```typescript
+// Server Component auth function - NO refresh
+export async function requireAuth() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  if (!accessToken) {
+    redirect('/auth/login');
+  }
+
+  try {
+    const claims = await scalekit.validateToken(accessToken, {
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
+      audience: process.env.SCALEKIT_CLIENT_ID
+    });
+    return claims;
+  } catch (error) {
+    // Token expired - redirect to login for re-authentication
+    // Note: Cannot refresh tokens in Server Components
+    redirect('/auth/login');
+  }
+}
+```
+
+**Token Refresh in Next.js:**
+Token refresh CAN be done in:
+
+- Route Handlers (`app/*/route.ts` files)
+- Server Actions (`'use server'` functions)
+- Middleware (`middleware.ts`)
+
+**Cookie Deletion in Next.js:**
+Use `.set()` with `maxAge: 0` instead of `.delete()` for reliable cookie clearing:
+
+```typescript
+// ✅ Recommended (more reliable)
+response.cookies.set('accessToken', '', { path: '/', maxAge: 0 });
+
+// ⚠️ Less reliable in Next.js
+response.cookies.delete('accessToken');
+```
+
+**Why?** Next.js cookie deletion behavior can be inconsistent across different deployment environments. Using `.set()` with `maxAge: 0` ensures the cookie is properly expired and cleared.
 
 ## Next Steps
 

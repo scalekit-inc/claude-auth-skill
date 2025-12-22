@@ -22,6 +22,7 @@ All critical authentication bugs identified in the UnitPay Engineering Team's co
 ### Issue #1: validateAccessToken() Returns Boolean, Not Claims 🔴 CRITICAL
 
 **Problem:**
+
 ```javascript
 // ❌ BROKEN: Returns true/false, not user claims
 const claims = await scalekit.validateAccessToken(token);
@@ -29,10 +30,11 @@ req.user = claims; // Will be `true`, not {sub, email, org_id, ...}
 ```
 
 **Solution:**
+
 ```javascript
 // ✅ FIXED: Returns actual JWT claims object
 const claims = await scalekit.validateToken(token, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 req.user = claims; // Now has {sub, email, org_id, roles, permissions, ...}
@@ -46,6 +48,7 @@ req.user = claims; // Now has {sub, email, org_id, roles, permissions, ...}
 ### Issue #2: scalekit.organizations Property Doesn't Exist 🔴 CRITICAL
 
 **Problem:**
+
 ```javascript
 // ❌ BROKEN: Property doesn't exist in SDK
 const portalLink = await scalekit.organizations.generatePortalLink(orgId);
@@ -53,6 +56,7 @@ const portalLink = await scalekit.organizations.generatePortalLink(orgId);
 ```
 
 **Solution:**
+
 ```javascript
 // ✅ FIXED: SDK uses singular "organization"
 const portalLink = await scalekit.organization.generatePortalLink(orgId);
@@ -108,6 +112,7 @@ const portalLink = await scalekit.organization.generatePortalLink(orgId);
 **Impact:** These files provide comprehensive guidance on advanced auth patterns: token refresh strategies, session management, security hardening, monitoring.
 
 **Patterns Updated:**
+
 - Basic token validation
 - Token refresh flows
 - On-demand refresh strategy
@@ -127,6 +132,7 @@ const portalLink = await scalekit.organization.generatePortalLink(orgId);
 ```
 
 **Output:**
+
 ```
 🔍 Verifying Scalekit Skill Fixes...
 
@@ -147,18 +153,21 @@ Checking validateToken() calls have options...
 ### Manual Verification
 
 **Issue #1 - Zero instances remain:**
+
 ```bash
 grep -r "validateAccessToken" skills/scalekit-auth/
 # Returns: 0 results ✅
 ```
 
 **Issue #2 - Zero instances remain:**
+
 ```bash
 grep -r "scalekit\.organizations\." skills/scalekit-auth/
 # Returns: 0 results ✅
 ```
 
 **All validateToken calls have options:**
+
 ```bash
 grep -r "validateToken(" skills/scalekit-auth/ | grep -v "{issuer"
 # Returns: 0 results (all calls include options) ✅
@@ -201,6 +210,7 @@ grep -r "validateToken(" skills/scalekit-auth/ | grep -v "{issuer"
 ### Developer Experience Improvements
 
 **Before Fixes:**
+
 - ❌ Authentication failures with "undefined" user data
 - ❌ Runtime TypeError on organization methods
 - ❌ Silent failures (no obvious errors, just missing data)
@@ -209,6 +219,7 @@ grep -r "validateToken(" skills/scalekit-auth/ | grep -v "{issuer"
 - ❌ 401 errors due to empty user objects
 
 **After Fixes:**
+
 - ✅ Working authentication with complete user data
 - ✅ No runtime errors on SDK methods
 - ✅ Clear error messages when validation fails
@@ -219,14 +230,17 @@ grep -r "validateToken(" skills/scalekit-auth/ | grep -v "{issuer"
 ### Files Affected by Visibility
 
 **High Visibility (10,000+ views):**
+
 - SKILL.md (entry point)
 - full-stack-auth/quickstart.md
 - modular-sso/quickstart.md
 
 **Medium Visibility (1,000+ views):**
+
 - Template files (complete implementations)
 
 **Reference Visibility (100+ views):**
+
 - Reference documentation (advanced patterns)
 
 By fixing high-visibility files first (Phase 1), we prevented the majority of new implementations from inheriting these bugs.
@@ -266,7 +280,7 @@ async validateToken<T>(token: string, options?: TokenValidationOptions): Promise
 }
 ```
 
-**Source:** https://github.com/scalekit-inc/scalekit-sdk-node
+**Source:** <https://github.com/scalekit-inc/scalekit-sdk-node>
 
 ---
 
@@ -277,7 +291,7 @@ All skill documentation now uses this consistent pattern:
 ```javascript
 // ✅ Standard Token Validation Pattern
 const claims = await scalekit.validateToken(token, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 
@@ -352,6 +366,7 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 ## Follow-Up Tasks
 
 ### Immediate (Before Commit)
+
 - [x] Fix all Issue #1 instances (26)
 - [x] Fix all Issue #2 instances (4)
 - [x] Create verification script
@@ -361,6 +376,7 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 - [ ] Create git commit
 
 ### Short-term (This Week)
+
 - [ ] Update README.md version to v1.1.0
 - [ ] Update version history section
 - [ ] Add "Recent Fixes" section to README
@@ -369,6 +385,7 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 - [ ] Communicate completion to UnitPay team
 
 ### Medium-term (Next 2 Weeks)
+
 - [ ] Add ESLint rules to prevent `validateAccessToken`
 - [ ] Add ESLint rules to prevent `scalekit.organizations`
 - [ ] Create pre-commit hooks
@@ -377,6 +394,7 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 - [ ] Create migration guide for existing users
 
 ### Long-term (Next Month)
+
 - [ ] Monitor for any regression issues
 - [ ] Gather feedback from UnitPay team
 - [ ] Consider adding TypeScript examples
@@ -396,12 +414,14 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 > Thank you for your exceptional technical report! We've completed all fixes.
 >
 > **Summary:**
+>
 > - ✅ All 26 instances of Issue #1 fixed (validateAccessToken → validateToken)
 > - ✅ All 4 instances of Issue #2 fixed (organizations → organization)
 > - ✅ Automated verification: All checks passed
 > - ✅ Ready for production use
 >
 > **Files Fixed:**
+>
 > - Entry point: SKILL.md
 > - Quickstarts: Full-Stack Auth, Modular SSO
 > - Templates: Express, Next.js (both paths)
@@ -409,16 +429,19 @@ Deletions: ~30 lines (removed validateAccessToken calls)
 >
 > **Verification:**
 > We created an automated verification script (`scripts/verify_fixes.sh`) that confirms:
+>
 > - Zero instances of `validateAccessToken` remain
 > - Zero instances of `scalekit.organizations` remain
 > - All `validateToken` calls include required options
 >
 > **Next Steps:**
+>
 > - We're preparing version 1.1.0 release
 > - Adding linting rules to prevent regressions
 > - Would appreciate your beta testing when convenient
 >
 > **Timeline:**
+>
 > - Report received: December 18, 2025
 > - All fixes completed: December 19, 2025
 > - Resolution time: <24 hours
@@ -469,9 +492,10 @@ const claims = await scalekit.validateAccessToken(token);
 ```
 
 **With this:**
+
 ```javascript
 const claims = await scalekit.validateToken(token, {
-  issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+  issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
   audience: process.env.SCALEKIT_CLIENT_ID
 });
 ```
@@ -479,6 +503,7 @@ const claims = await scalekit.validateToken(token, {
 ## Verification
 
 Run the verification script to check your implementation:
+
 ```bash
 ./scripts/verify_fixes.sh
 ```
@@ -486,6 +511,7 @@ Run the verification script to check your implementation:
 ## Thanks
 
 Special thanks to the UnitPay Engineering Team for their comprehensive technical report.
+
 ```
 
 ---
@@ -516,6 +542,7 @@ module.exports = {
 ### Pre-Commit Hook (Planned)
 
 Create `.husky/pre-commit`:
+
 ```bash
 #!/bin/sh
 ./scripts/verify_fixes.sh || exit 1
@@ -583,6 +610,7 @@ jobs:
 ### For Future Reports
 
 UnitPay's report was exceptional because it included:
+
 - ✅ SDK source code references
 - ✅ Runtime behavior evidence
 - ✅ File and line numbers
@@ -599,6 +627,7 @@ This is the gold standard for technical bug reports.
 ### UnitPay Engineering Team
 
 **Exceptional contributions:**
+
 - Comprehensive technical analysis
 - SDK source code investigation
 - Clear reproduction steps
@@ -607,6 +636,7 @@ This is the gold standard for technical bug reports.
 - Professional communication
 
 **This report exemplifies:**
+
 - Technical excellence
 - Community collaboration
 - Open-source contribution best practices

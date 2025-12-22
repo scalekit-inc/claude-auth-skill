@@ -55,12 +55,16 @@ POST_LOGOUT_URL=http://localhost:3000
 COOKIE_SECURE=false  # Set to true in production with HTTPS
 ```
 
-**1.2 Register callback URL in Scalekit Dashboard:**
+**1.2 Register redirect URLs in Scalekit Dashboard:**
 
-1. Go to https://app.scalekit.com
-2. Navigate to Settings → Redirect URIs
-3. Add `http://localhost:3000/auth/callback` for development
-4. Add your production callback URL when deploying
+1. Go to <https://app.scalekit.com>
+2. Navigate to Settings → Redirect URLs
+3. Add these URLs for development:
+   - Callback URL: `http://localhost:3000/auth/callback`
+   - Post Logout URL: `http://localhost:3000`
+4. Add your production URLs when deploying
+
+**Important:** Both callback and post-logout URLs must be registered, or authentication/logout will fail
 
 **1.3 Validate environment:**
 
@@ -71,12 +75,14 @@ python scripts/validate_env.py
 ### Step 2: Install SDK and Dependencies
 
 **Node.js:**
+
 ```bash
 npm install @scalekit-sdk/node
 npm install express cookie-parser dotenv
 ```
 
 **Python:**
+
 ```bash
 pip install scalekit-sdk-python
 pip install fastapi uvicorn python-dotenv
@@ -87,6 +93,7 @@ pip install fastapi uvicorn python-dotenv
 Create a centralized client instance:
 
 **Node.js (lib/scalekit.js):**
+
 ```javascript
 import { Scalekit } from '@scalekit-sdk/node';
 import dotenv from 'dotenv';
@@ -104,6 +111,7 @@ export const POST_LOGOUT_URL = process.env.POST_LOGOUT_URL;
 ```
 
 **Python (lib/scalekit.py):**
+
 ```python
 from scalekit import ScalekitClient
 import os
@@ -124,6 +132,7 @@ POST_LOGOUT_URL = os.getenv("POST_LOGOUT_URL")
 ### Step 4: Implement Login Endpoint
 
 **Node.js:**
+
 ```javascript
 import express from 'express';
 import { scalekit, CALLBACK_URL } from './lib/scalekit.js';
@@ -140,6 +149,7 @@ app.get('/auth/login', (req, res) => {
 ```
 
 **Python:**
+
 ```python
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
@@ -163,6 +173,7 @@ async def login():
 This endpoint receives the authorization code and exchanges it for tokens.
 
 **Node.js:**
+
 ```javascript
 import cookieParser from 'cookie-parser';
 
@@ -222,6 +233,7 @@ app.get('/auth/callback', async (req, res) => {
 ```
 
 **Python:**
+
 ```python
 from fastapi import Cookie, Response
 from fastapi.responses import RedirectResponse
@@ -294,6 +306,7 @@ async def callback(code: str, response: Response):
 ### Step 6: Create Authentication Middleware
 
 **Node.js (middleware/auth.js):**
+
 ```javascript
 import { scalekit } from '../lib/scalekit.js';
 
@@ -308,7 +321,7 @@ export async function authMiddleware(req, res, next) {
     // Validate token
     try {
       const claims = await scalekit.validateToken(accessToken, {
-        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+        issuer: process.env.SCALEKIT_ENVIRONMENT_URL,
         audience: process.env.SCALEKIT_CLIENT_ID
       });
       req.user = claims;
@@ -345,7 +358,7 @@ export async function authMiddleware(req, res, next) {
 
         // Validate new token and continue
         const claims = await scalekit.validateToken(result.accessToken, {
-          issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+          issuer: process.env.SCALEKIT_ENVIRONMENT_URL,
           audience: process.env.SCALEKIT_CLIENT_ID
         });
         req.user = claims;
@@ -367,6 +380,7 @@ export async function authMiddleware(req, res, next) {
 ```
 
 **Python (middleware/auth.py):**
+
 ```python
 from fastapi import Request, HTTPException, Response
 from fastapi.responses import RedirectResponse
@@ -430,6 +444,7 @@ async def require_auth(request: Request, response: Response):
 ### Step 7: Protect Routes
 
 **Node.js:**
+
 ```javascript
 import { authMiddleware } from './middleware/auth.js';
 
@@ -452,6 +467,7 @@ app.get('/api/profile', (req, res) => {
 ```
 
 **Python:**
+
 ```python
 from fastapi import Depends
 from middleware.auth import require_auth
@@ -470,7 +486,10 @@ async def profile(user = Depends(require_auth)):
 
 ### Step 8: Implement Logout
 
+**Important:** Logout must redirect to Scalekit's logout endpoint to properly terminate the session on both your application AND the identity provider.
+
 **Node.js:**
+
 ```javascript
 import { scalekit, POST_LOGOUT_URL } from './lib/scalekit.js';
 
@@ -484,13 +503,23 @@ app.get('/auth/logout', (req, res) => {
   res.clearCookie('user');
 
   // Generate Scalekit logout URL
-  const logoutUrl = scalekit.getLogoutUrl(idToken, POST_LOGOUT_URL);
+  // This logs out from Scalekit's session AND the identity provider
+  const logoutUrl = scalekit.getLogoutUrl({
+    idTokenHint: idToken,
+    postLogoutRedirectUri: POST_LOGOUT_URL
+  });
 
   res.redirect(logoutUrl);
 });
 ```
 
+**Critical Configuration:**
+
+- `POST_LOGOUT_URL` must be registered in Scalekit Dashboard → Settings → Redirect URLs
+- Without this, logout will fail with a redirect error
+
 **Python:**
+
 ```python
 from lib.scalekit import scalekit, POST_LOGOUT_URL
 
@@ -519,12 +548,14 @@ async def logout(request: Request):
 ### 1. Start your application
 
 **Node.js:**
+
 ```bash
 node app.js
 # Visit http://localhost:3000
 ```
 
 **Python:**
+
 ```bash
 uvicorn app:app --reload
 # Visit http://localhost:8000
@@ -558,6 +589,7 @@ python scripts/test_auth_flow.py
 ### Add Frontend Login Button
 
 **HTML:**
+
 ```html
 <a href="/auth/login">
   <button>Sign In with Scalekit</button>
@@ -565,6 +597,7 @@ python scripts/test_auth_flow.py
 ```
 
 **React:**
+
 ```jsx
 function LoginButton() {
   return (
@@ -578,6 +611,7 @@ function LoginButton() {
 ### Display User Information
 
 **Node.js:**
+
 ```javascript
 app.get('/api/me', authMiddleware, (req, res) => {
   const user = JSON.parse(req.cookies.user || '{}');
@@ -586,6 +620,7 @@ app.get('/api/me', authMiddleware, (req, res) => {
 ```
 
 **Python:**
+
 ```python
 @app.get("/api/me")
 async def get_current_user(request: Request):
@@ -619,27 +654,62 @@ Before deploying to production:
 ## Troubleshooting
 
 **"Redirect URI mismatch" error:**
+
 - Verify callback URL in code matches exactly what's registered in Dashboard
 - Include protocol and port
 
 **Tokens not being set:**
+
 - Check cookie settings (secure flag in production)
 - Verify domain matches
 
 **Session not persisting:**
+
 - Ensure cookies are HttpOnly
 - Check sameSite settings
 - Verify max-age is set correctly
 
 **CORS errors:**
+
 - Configure CORS middleware to allow credentials
 - Set proper allowed origins
 
+**Logout not working:**
+
+- Ensure POST_LOGOUT_URL is registered in Scalekit Dashboard
+- Verify getLogoutUrl() is being called with valid idToken
+- For Next.js: Use response.cookies.set(name, '', { maxAge: 0 }) instead of .delete()
+
 For more help, see [reference/troubleshooting.md](../reference/troubleshooting.md)
+
+## Framework-Specific Notes
+
+### Next.js App Router
+
+**Server Components Limitation:**
+Next.js Server Components cannot use `cookieStore.set()` during rendering. This means:
+
+- Token refresh **cannot** be done in `requireAuth()` or other server component functions
+- If a token is expired, the user must re-authenticate (redirect to login)
+- Token refresh CAN be done in Route Handlers (route.ts files) and Server Actions
+
+**Cookie Deletion:**
+Use `.set()` with `maxAge: 0` instead of `.delete()` for reliable cookie clearing:
+
+```typescript
+// ✅ Recommended
+response.cookies.set('accessToken', '', { path: '/', maxAge: 0 });
+
+// ❌ Less reliable in Next.js
+response.cookies.delete('accessToken');
+```
+
+**See the complete Next.js template for working implementations:** [templates/nextjs.md](templates/nextjs.md)
 
 ## Complete Examples
 
 For fully working examples, see:
+
 - [Node.js + Express template](templates/nodejs-express.md)
 - [Next.js App Router template](templates/nextjs.md)
 - [Python + FastAPI template](templates/python-fastapi.md)

@@ -188,11 +188,14 @@ Current support matrix (as of v1.0.0):
 | Node.js + Express | ✅ | ✅ | ✅ | ✅ |
 | Next.js (App Router) | ✅ | ✅ | ✅ | ✅ |
 | Python + FastAPI | ✅ | 🚧 | ✅ | ✅ |
+| Python + FastMCP | - | - | ✅ | - |
 | Django | 🚧 | 🚧 | 🚧 | 🚧 |
 | Ruby on Rails | 🚧 | 🚧 | - | - |
 | Go | 🚧 | 🚧 | ✅ | ✅ |
 
 ✅ = Available | 🚧 = Coming Soon | - = Not Applicable
+
+**FastMCP:** FastMCP is a Python framework specifically for MCP servers with built-in Scalekit OAuth support via `ScalekitProvider`. It's the recommended approach for Python-based MCP servers.
 
 When adding new framework support, update this matrix in both CLAUDE.md and README.md.
 

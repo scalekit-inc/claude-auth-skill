@@ -15,10 +15,12 @@ Phase 2 fixes have been successfully completed. All full-stack authentication te
 #### Issue #1: validateAccessToken → validateToken (with options)
 
 ✅ **skills/scalekit-auth/full-stack-auth/templates/nodejs-express.md** - 2 instances fixed
+
 - Line 119: Token validation in middleware
 - Line 151: Token validation after refresh
 
 ✅ **skills/scalekit-auth/full-stack-auth/templates/nextjs.md** - 5 instances fixed
+
 - Line 139: Renamed function `validateAccessToken()` → `getValidatedClaims()`
 - Line 148: Token validation inside getValidatedClaims function
 - Line 168: Token validation in requireAuth function
@@ -39,11 +41,13 @@ nextjs.md: 0 instances of validateAccessToken ✅
 ### Important Note: Function Rename
 
 In `nextjs.md`, the helper function `validateAccessToken()` was renamed to `getValidatedClaims()` to:
+
 1. Avoid confusion with the deprecated SDK method
 2. Better describe what the function does (returns claims object)
 3. Follow naming conventions that clarify the function's purpose
 
 **Before:**
+
 ```typescript
 export async function validateAccessToken() {
   // ... returns claims
@@ -51,6 +55,7 @@ export async function validateAccessToken() {
 ```
 
 **After:**
+
 ```typescript
 export async function getValidatedClaims() {
   // ... returns claims
@@ -64,6 +69,7 @@ export async function getValidatedClaims() {
 ### Node.js Express Template
 
 **Before (Broken):**
+
 ```javascript
 // Validate access token
 try {
@@ -76,11 +82,12 @@ try {
 ```
 
 **After (Fixed):**
+
 ```javascript
 // Validate access token
 try {
   const claims = await scalekit.validateToken(accessToken, {
-    issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+    issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
     audience: process.env.SCALEKIT_CLIENT_ID
   });
   req.user = claims; // ✅ Now contains {sub, email, org_id, ...}
@@ -93,6 +100,7 @@ try {
 ### Next.js Template
 
 **Before (Broken):**
+
 ```typescript
 export async function requireAuth() {
   const accessToken = cookieStore.get('accessToken')?.value;
@@ -107,13 +115,14 @@ export async function requireAuth() {
 ```
 
 **After (Fixed):**
+
 ```typescript
 export async function requireAuth() {
   const accessToken = cookieStore.get('accessToken')?.value;
 
   try {
     const claims = await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return claims; // ✅ Returns {sub, email, org_id, roles, ...}
@@ -128,7 +137,9 @@ export async function requireAuth() {
 ## Impact
 
 ### Files Impacted: 2 template files
+
 ### Total Fixes: 7 instances corrected
+
 - nodejs-express.md: 2 instances
 - nextjs.md: 5 instances
 
@@ -142,6 +153,7 @@ export async function requireAuth() {
 4. **Proper authorization** - RBAC, organization access, and custom claims work correctly
 
 These are the most comprehensive templates in the skill, containing:
+
 - Complete file structure
 - Full authentication flows
 - Token refresh logic
@@ -167,6 +179,7 @@ These are the most comprehensive templates in the skill, containing:
 ### Remaining Work (Phase 3)
 
 **Phase 3 Files (Reference Documentation):**
+
 - reference/session-management.md (8 instances)
 - reference/security-best-practices.md (1 instance)
 
@@ -223,7 +236,7 @@ SCALEKIT_CLIENT_ID=skc_your_client_id
 SCALEKIT_CLIENT_SECRET=your_client_secret
 ```
 
-**Note:** Templates include fallback values (`|| 'https://auth.scalekit.com'`) for development, but production deployments should explicitly set `SCALEKIT_ENVIRONMENT_URL`.
+**Note:** Templates include fallback values (``) for development, but production deployments should explicitly set `SCALEKIT_ENVIRONMENT_URL`.
 
 ---
 
@@ -234,6 +247,7 @@ SCALEKIT_CLIENT_SECRET=your_client_secret
 If any external code was calling `validateAccessToken()` from the Next.js template, it should be updated to call `getValidatedClaims()` instead.
 
 **Migration:**
+
 ```typescript
 // Old (no longer exists)
 import { validateAccessToken } from '@/lib/auth';
@@ -245,6 +259,7 @@ const claims = await getValidatedClaims();
 ```
 
 However, this is unlikely to affect users since:
+
 1. The function was in template code (not published library)
 2. Most users copy-paste the entire file
 3. The function signature and behavior remain identical
@@ -284,17 +299,19 @@ Checking validateToken() calls have options...
 ## Next Steps
 
 ### Immediate
+
 1. ✅ Phase 2 Complete
 2. 🔄 Begin Phase 3: Reference documentation
    - reference/session-management.md (8 instances)
    - reference/security-best-practices.md (1 instance)
 
 ### After Phase 3
+
 3. Update README.md with version bump
-4. Update CLAUDE.md with common mistakes
-5. Add linting rules to prevent regressions
-6. Create git commit for all phases
-7. Notify UnitPay team of fixes
+2. Update CLAUDE.md with common mistakes
+3. Add linting rules to prevent regressions
+4. Create git commit for all phases
+5. Notify UnitPay team of fixes
 
 ---
 
@@ -319,8 +336,10 @@ Continued thanks to the **UnitPay Engineering Team** for their comprehensive tec
 
 ## Git Status (Phase 1 + 2)
 
-### Modified Files:
+### Modified Files
+
 **Phase 1:**
+
 - skills/scalekit-auth/SKILL.md
 - skills/scalekit-auth/full-stack-auth/quickstart.md
 - skills/scalekit-auth/modular-sso/quickstart.md
@@ -328,10 +347,12 @@ Continued thanks to the **UnitPay Engineering Team** for their comprehensive tec
 - skills/scalekit-auth/modular-sso/templates/nextjs-sso.md
 
 **Phase 2:**
+
 - skills/scalekit-auth/full-stack-auth/templates/nodejs-express.md
 - skills/scalekit-auth/full-stack-auth/templates/nextjs.md
 
-### New Files:
+### New Files
+
 - FIX_PLAN.md
 - PHASE1_COMPLETED.md
 - PHASE2_COMPLETED.md

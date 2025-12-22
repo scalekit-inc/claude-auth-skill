@@ -9,10 +9,10 @@
   "plugins": [
     {
       "name": "scalekit-auth",
-      "source": ".",
-      "description": "Comprehensive authentication implementation guide for Scalekit. Supports full-stack auth, modular SSO (SAML/OIDC), and MCP OAuth 2.1.",
-      "version": "1.0.0",
-      "tags": ["authentication", "sso", "oauth", "saml", "oidc", "enterprise"]
+      "source": "./",
+      "description": "Comprehensive authentication implementation guide for Scalekit. Supports full-stack auth, modular SSO (SAML/OIDC), and MCP OAuth 2.1. Includes FastMCP support.",
+      "version": "1.1.0",
+      "tags": ["authentication", "sso", "oauth", "saml", "oidc", "enterprise", "mcp", "fastmcp"]
     }
   ]
 }

@@ -146,7 +146,7 @@ export async function getValidatedClaims() {
 
   try {
     const claims = await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return claims;
@@ -157,7 +157,11 @@ export async function getValidatedClaims() {
 
 /**
  * Require authentication for server components/actions
- * Redirects to login if not authenticated
+ * Redirects to login if not authenticated or token is invalid
+ *
+ * Note: Token refresh cannot be done in Next.js Server Components
+ * because cookieStore.set() is not allowed during rendering.
+ * If the token is expired, the user must re-authenticate.
  */
 export async function requireAuth() {
   const cookieStore = await cookies();
@@ -169,42 +173,14 @@ export async function requireAuth() {
 
   try {
     const claims = await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return claims;
   } catch (error) {
-    // Token invalid or expired, try to refresh
-    const refreshToken = cookieStore.get('refreshToken')?.value;
-
-    if (!refreshToken) {
-      redirect('/auth/login');
-    }
-
-    try {
-      const result = await scalekit.refreshAccessToken(refreshToken);
-
-      // Update cookies
-      cookieStore.set('accessToken', result.accessToken, {
-        ...cookieConfig,
-        maxAge: result.expiresIn,
-      });
-
-      if (result.refreshToken) {
-        cookieStore.set('refreshToken', result.refreshToken, {
-          ...cookieConfig,
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-        });
-      }
-
-      const claims = await scalekit.validateToken(result.accessToken, {
-        issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
-        audience: process.env.SCALEKIT_CLIENT_ID
-      });
-      return claims;
-    } catch {
-      redirect('/auth/login');
-    }
+    // Token invalid or expired - redirect to login
+    // Note: Cannot refresh tokens in Server Components
+    redirect('/auth/login');
   }
 }
 
@@ -221,7 +197,7 @@ export async function isAuthenticated(): Promise<boolean> {
 
   try {
     await scalekit.validateToken(accessToken, {
-      issuer: process.env.SCALEKIT_ENVIRONMENT_URL || 'https://auth.scalekit.com',
+      issuer: process.env.SCALEKIT_ENVIRONMENT_URL ,
       audience: process.env.SCALEKIT_CLIENT_ID
     });
     return true;
@@ -333,24 +309,48 @@ export async function GET(request: NextRequest) {
     const idToken = cookieStore.get('idToken')?.value;
 
     // Generate Scalekit logout URL
-    const logoutUrl = scalekit.getLogoutUrl(idToken, POST_LOGOUT_URL);
+    // This logs out from Scalekit's session AND the identity provider
+    const logoutUrl = scalekit.getLogoutUrl({
+      idTokenHint: idToken,
+      postLogoutRedirectUri: POST_LOGOUT_URL
+    });
 
-    // Create redirect response
+    // Create redirect response to Scalekit logout
     const response = NextResponse.redirect(logoutUrl);
 
     // Clear all auth cookies
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
-    response.cookies.delete('idToken');
-    response.cookies.delete('user');
+    // Note: Use .set() with maxAge: 0 (not .delete()) for reliable cookie clearing
+    const cookieOptions = { path: '/', maxAge: 0 };
+    response.cookies.set('accessToken', '', cookieOptions);
+    response.cookies.set('refreshToken', '', cookieOptions);
+    response.cookies.set('idToken', '', cookieOptions);
+    response.cookies.set('user', '', cookieOptions);
+
+    console.log('User logged out - redirecting to Scalekit logout');
 
     return response;
   } catch (error) {
     console.error('Logout error:', error);
-    return NextResponse.redirect(new URL('/', request.url));
+
+    // Fallback: Clear cookies and redirect to home even if Scalekit logout fails
+    const response = NextResponse.redirect(new URL('/', request.url));
+    const cookieOptions = { path: '/', maxAge: 0 };
+    response.cookies.set('accessToken', '', cookieOptions);
+    response.cookies.set('refreshToken', '', cookieOptions);
+    response.cookies.set('idToken', '', cookieOptions);
+    response.cookies.set('user', '', cookieOptions);
+
+    return response;
   }
 }
 ```
+
+**Important Notes:**
+
+1. **POST_LOGOUT_URL** must be registered in your Scalekit Dashboard → Settings → Redirect URLs
+2. The logout flow: Clear local cookies → Redirect to Scalekit → Scalekit logs out → Redirect back to your app
+3. If `getLogoutUrl()` fails, the fallback clears cookies and redirects to home
+4. Use `maxAge: 0` instead of `.delete()` for reliable cookie removal in Next.js
 
 ## File 7: app/api/me/route.ts
 
@@ -537,7 +537,7 @@ npm run dev
 
 ### 4. Test the flow
 
-1. Visit http://localhost:3000
+1. Visit <http://localhost:3000>
 2. Click "Sign In"
 3. Complete authentication
 4. You'll be redirected to the dashboard
@@ -549,6 +549,7 @@ npm run dev
 For form-based authentication or logout:
 
 **app/actions/auth.ts:**
+
 ```typescript
 'use server';
 
@@ -574,6 +575,7 @@ export async function logout() {
 ```
 
 **Usage in component:**
+
 ```typescript
 import { logout } from '@/app/actions/auth';
 
@@ -591,6 +593,7 @@ export function LogoutButton() {
 For client-side interactivity:
 
 **components/user-menu.tsx:**
+
 ```typescript
 'use client';
 
